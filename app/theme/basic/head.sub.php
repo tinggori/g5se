@@ -49,6 +49,21 @@ if($config['cf_add_meta'])
     echo $config['cf_add_meta'].PHP_EOL;
 ?>
 <title><?php echo $g5_head_title; ?></title>
+<link rel="manifest" href="/manifest.json?v=2">
+<link rel="apple-touch-icon" href="/img/icons/icon-192x192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ITDOT APP">
+<script>
+// 브라우저가 서비스 워커를 지원하면 등록 (app/ 경로 기준)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW 등록 성공:', reg.scope))
+      .catch(err => console.log('SW 등록 실패:', err));
+  });
+}
+</script>
 <?php
 $shop_css = '';
 if (defined('_SHOP_')) $shop_css = '_shop';
