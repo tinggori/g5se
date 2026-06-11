@@ -38,7 +38,7 @@ include_once(G5_PATH.'/head.sub.php');
                     <?php if ($is_member) { ?>
                         안녕하세요, <span style="color: var(--m-primary);"><?php echo get_text($member['mb_nick']) ?></span> 님
                     <?php } else { ?>
-                        환영합니다
+                        환영합니다.
                     <?php } ?>
                 </h1>
                 <p style="font-size: var(--m-text-lg); color: var(--m-text-muted); max-width: 560px; margin: 0 auto;">
