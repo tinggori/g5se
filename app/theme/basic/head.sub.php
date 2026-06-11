@@ -30,6 +30,7 @@ header("Expires: 0"); // rfc2616 - Section 14.21
 header("Pragma: no-cache"); // HTTP/1.0
 */
 ?>
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -50,6 +51,7 @@ if($config['cf_add_meta'])
 ?>
 <title><?php echo $g5_head_title; ?></title>
 <link rel="manifest" href="/manifest.json?v=2">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/img/icons/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

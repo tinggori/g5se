@@ -39,7 +39,7 @@
 </head>
 <body>
     <div class="icon">📡</div>
-    <h1>인터넷 연결이 끊겼습니다</h1>
+    <h1>인터넷 연결이 끊겼습니다.</h1>
     <p>오프라인 상태에서는 앱을 사용할 수 없습니다.<br>네트워크 연결을 확인한 후 다시 시도해 주세요.</p>
     <button class="retry-btn" onclick="window.location.reload();">다시 시도</button>
 </body>
