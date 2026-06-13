@@ -262,7 +262,92 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+<script src="<?php echo G5_JS_URL; ?>/common_utils.js?v=<?php echo time(); ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const host = window.location.hostname;
+    const rootDomain = host.replace(/^www\./i, '');
+    const cookieDomain = '.' + rootDomain;
 
+    // [백신 코드] 이전 undefined 강제 삭제
+    if (document.cookie.indexOf('pwa_device_id=undefined') !== -1) {
+        document.cookie = `pwa_device_id=; path=/; max-age=0; domain=${cookieDomain}; SameSite=Lax`;
+        console.log("🧹 기존 undefined 쿠키 삭제 완료");
+    }
+
+    const screenRes = window.screen.width + 'x' + window.screen.height;
+    document.cookie = `pwa_screen_res=${screenRes}; path=/; max-age=3153600000; domain=${cookieDomain}; SameSite=Lax`;
+    console.log("✅ 1단계: 해상도 쿠키 생성 완료 (" + screenRes + ")");
+
+    const match = document.cookie.match(new RegExp('(^| )pwa_device_id=([^;]+)'));
+    const existingDeviceId = match ? match[2] : null;
+
+    if (!existingDeviceId) {
+        console.log("✅ 2단계: 기존 지문 없음, 지문 생성 시도");
+        
+        // ⚠️ 여기서 window.UiHelper 부분은 관리자님이 바꾼 이름과 똑같아야 합니다!
+        if (window.UiHelper) { 
+            console.log("✅ 3단계: 라이브러리 인식 성공!");
+            
+            const fpPromise = window.UiHelper.load(); // ⚠️ 여기도 바꾼 이름
+            fpPromise.then(fp => fp.get()).then(result => {
+                
+                // ⚠️ result.custom_key 부분도 관리자님이 바꾼 이름이어야 합니다!
+                const visitorId = result.custom_key; 
+                console.log("✅ 4단계: 지문 추출 결과 ->", visitorId);
+
+                if (visitorId) {
+                    document.cookie = `pwa_device_id=${visitorId}; path=/; max-age=3153600000; domain=${cookieDomain}; SameSite=Lax`;
+                    console.log("✅ 5단계: 지문 쿠키 저장 완료!");
+                    sendPwaLog('visit', screenRes);
+                } else {
+                    console.error("❌ 에러: visitorId 값이 비어있습니다. 변수명을 확인하세요.");
+                }
+                
+            }).catch(e => console.error("❌ 에러: 지문 생성 중 오류 발생 ->", e));
+        } else {
+            console.error("❌ 에러: window.UiHelper(라이브러리)를 찾을 수 없습니다! 스크립트가 로드되지 않았거나 이름이 틀렸습니다.");
+        }
+    } else {
+        console.log("ℹ️ 이미 지문 쿠키가 존재합니다:", existingDeviceId);
+    }
+    // 4. PWA 팝업 버튼 이벤트 감지
+    const installBtn = document.querySelector('.pwa-install-btn'); // 실제 버튼 클래스로 수정
+    const closeBtn = document.querySelector('.pwa-close-btn');     // 실제 닫기 버튼 클래스로 수정
+
+    // 팝업 노출 시
+    // sendPwaLog('impression'); // 필요 시 주석 해제하여 사용
+
+    if (installBtn) {
+        installBtn.addEventListener('click', () => { sendPwaLog('click'); });
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => { sendPwaLog('dismissed'); });
+    }
+    window.addEventListener('appinstalled', (evt) => {
+        sendPwaLog('installed');
+    });
+
+    // 5. 서버 통신 함수
+function sendPwaLog(actionType, resolution = '') {
+    const logUrl = '<?php echo G5_THEME_URL; ?>/ajax.pwa_log.php';
+    const payload = JSON.stringify({ action: actionType, screen_res: resolution });
+
+    // 삼성 브라우저 및 모바일 환경에서 절대 차단되지 않는 Beacon 전송 방식 사용
+    if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(logUrl, blob);
+    } else {
+        // Beacon을 지원하지 않는 구형 브라우저용 Fallback
+        fetch(logUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+        }).catch(error => console.error('PWA Log Error:', error));
+    }
+}
+});
+</script>
 </body>
 </html>
 <?php echo html_end(); // HTML 마지막 처리 함수 : 반드시 넣어주시기 바랍니다.
